@@ -1,0 +1,17 @@
+#!/bin/bash
+
+case $1 in
+  dump )
+    find ~/.password-store -name *.gpg | sed -r -e s/.*password-store//g -e s/\.gpg$//g | cut -c 1 --complement | parallel --no-notice echo '{} $(pass show {})' | sort > password-store-dump.txt
+    ;;
+  restore )
+    while read line; do
+      passname=$(echo $line|cut -d ' ' -f 1)
+      password=$(echo $line|cut -d ' ' -f 2)
+      yes $password|pass insert $passname
+    done < password-store-dump.txt
+    ;;
+  * )
+    echo 'Usage: pass-dump <dump|restore>'
+    ;;
+esac
